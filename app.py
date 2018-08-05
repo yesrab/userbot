@@ -48,7 +48,7 @@ async def log(event):
     else:
         message = await client.get_messages(event.chat_id)
         message = str(message[0].message[4:])
-    await client.send_message(-1001200493978,message)
+    await client.send_message(-1001162835202,message)
     await event.edit("```Logged Successfully```")
 @client.on(events.NewMessage(outgoing=True, pattern='.purgeme'))
 async def purgeme(event):
