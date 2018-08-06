@@ -31,7 +31,8 @@ WIDE_MAP = dict((i, i + 0xFEE0) for i in range(0x21, 0x7F))
 WIDE_MAP[0x20] = 0x3000
 client = TelegramClient('session_name', api_id, api_hash).start()
 client.start()
-@client.on(events.NewMessage(outgoing=True, pattern='.delmsg'))
+
+@client.on(events.NewMessage(outgoing=True, pattern='.del'))
 async def delmsg(event):
     i=1
     async for message in client.iter_messages(event.chat_id,from_user='me'):
@@ -39,6 +40,7 @@ async def delmsg(event):
             break
         i=i+1
         await message.delete()
+
 @client.on(events.NewMessage(outgoing=True, pattern='.log'))
 async def log(event):
     textx=await event.get_reply_message()
@@ -50,6 +52,7 @@ async def log(event):
         message = str(message[0].message[4:])
     await client.send_message(-1001162835202,message)
     await event.edit("```Logged Successfully```")
+
 @client.on(events.NewMessage(outgoing=True, pattern='.purgeme'))
 async def purgeme(event):
     message=await client.get_messages(event.chat_id)
@@ -61,7 +64,7 @@ async def purgeme(event):
         i=i+1
         await message.delete()
     await client.send_message(event.chat_id,"```Purge Complete!``` Purged "+str(count)+" messages. **This auto-generated message shall be self destructed in 2 seconds.**")
-    await client.send_message(-1001200493978,"Purge of "+str(count)+" messages done successfully.")
+    await client.send_message(-1001162835202,"Purge of "+str(count)+" messages done successfully.")
     time.sleep(2)
     i=1
     async for message in client.iter_messages(event.chat_id,from_user='me'):
@@ -69,6 +72,7 @@ async def purgeme(event):
             break
         i=i+1
         await message.delete()
+
 @client.on(events.NewMessage(incoming=True))
 async def spam_tracker(event):
     global SPAM
@@ -79,6 +83,7 @@ async def spam_tracker(event):
        if spambool==True:
          await event.reply('Spam Message Detected')
          await event.reply('Spam results for `' + ch + '`\nScore: ' + spamscore + '\nIs Spam: ' + spambool)
+            
 @client.on(events.NewMessage(incoming=True))
 async def mention_afk(event):
     global COUNT_MSG
@@ -140,7 +145,8 @@ async def mention_afk(event):
                    else:
                     USERS[event.chat_id]=USERS[event.chat_id]+1
                     COUNT_MSG=COUNT_MSG+1
-@client.on(events.NewMessage(outgoing=True, pattern='.editme'))
+                    
+@client.on(events.NewMessage(outgoing=True, pattern='.edit'))
 async def editme(event):
     message=await client.get_messages(event.chat_id)
     string = str(message[0].message[8:])
@@ -151,21 +157,24 @@ async def editme(event):
             await event.delete()
             break
         i=i+1
-    await client.send_message(-1001200493978,"Edit query was executed successfully")
-@client.on(events.NewMessage(outgoing=True,pattern=r'.google (.*)'))
+    await client.send_message(-1001162835202,"Edit query was executed successfully")
+    
+@client.on(events.NewMessage(pattern=r'.google (.*)'))
 async def gsearch(event):
         match = event.pattern_match.group(1)
         result_=subprocess.run(['gsearch', match], stdout=subprocess.PIPE)
         result=str(result_.stdout.decode())
         await client.send_message(await client.get_input_entity(event.chat_id), message='**Search:**\n`' + match + '`\n\n**Result:**\n' + result, reply_to=event.id, link_preview=False)
-        await client.send_message(-1001200493978,"Google Search query "+match+" was executed successfully")
-@client.on(events.NewMessage(outgoing=True,pattern=r'.wiki (.*)'))
+        await client.send_message(-1001162835202,"Google Search query "+match+" was executed successfully")
+        
+@client.on(events.NewMessage(pattern=r'.wiki (.*)'))
 async def wiki(event):
         match = event.pattern_match.group(1)
         result=wikipedia.summary(match)
         await client.send_message(await client.get_input_entity(event.chat_id), message='**Search:**\n`' + match + '`\n\n**Result:**\n' + result, reply_to=event.id, link_preview=False)
-        await client.send_message(-1001200493978,"Wiki query "+match+" was executed successfully")
-@client.on(events.NewMessage(outgoing=True, pattern='.iamafk'))
+        await client.send_message(-1001162835202,"Wiki query "+match+" was executed successfully")
+        
+@client.on(events.NewMessage(outgoing=True, pattern='.afk'))
 async def set_afk(event):
             message=await client.get_messages(event.chat_id)
             string = str(message[0].message[8:])
@@ -175,17 +184,20 @@ async def set_afk(event):
             await event.edit("I am now AFK!")
             if string!="":
                 AFKREASON=string
-@client.on(events.NewMessage(outgoing=True, pattern='.asmon'))
+                
+@client.on(events.NewMessage(outgoing=True, pattern='.antispamon'))
 async def set_asm(event):
             global SPAM
             SPAM=True
             await event.edit("Spam Tracking turned on!")
-@client.on(events.NewMessage(outgoing=True, pattern='.asmoff'))
+                 
+@client.on(events.NewMessage(outgoing=True, pattern='.antispamoff'))
 async def set_asm_off(event):
             global SPAM
             SPAM=False
             await event.edit("Spam Tracking turned off!")
-@client.on(events.NewMessage(outgoing=True, pattern='.eval'))
+            
+@client.on(events.NewMessage(pattern='.calc'))
 async def evaluate(event):    
     evaluation = eval(event.text[6:])
     if inspect.isawaitable(evaluation):
@@ -194,24 +206,26 @@ async def evaluate(event):
       await event.edit("**Query: **\n```"+event.text[6:]+'```\n**Result: **\n```'+str(evaluation)+'```')
     else:
       await event.edit("**Query: **\n```"+event.text[6:]+'```\n**Result: **\n```No Result Returned/False```')
-    await client.send_message(-1001200493978,"Eval query "+event.text[6:]+" was executed successfully")
-@client.on(events.NewMessage(outgoing=True, pattern=r'.exec (.*)'))
-async def run(event):
- code = event.raw_text[5:]
- resp = event.respond
- creator='written by [Twit](tg://user?id=234480941) and copied by [blank](tg://user?id=214416808) (piece of shit)'
- exec(
-  f'async def __ex(event): ' +
-  ''.join(f'\n {l}' for l in code.split('\n'))
- )
- result = await locals()['__ex'](event)
- if result:
-  await event.edit("**Query: **\n```"+event.text[5:]+'```\n**Result: **\n```'+str(result)+'```')
- else:
-  await event.edit("**Query: **\n```"+event.text[5:]+'```\n**Result: **\n```'+'No Result Returned/False'+'```')
- await client.send_message(-1001200493978,"Exec query "+event.text[5:]+" was executed successfully") 
-@client.on(events.NewMessage(outgoing=True, pattern='.pingme'))
-async def pingme(event):
+    await client.send_message(-1001162835202,"Eval query "+event.text[6:]+" was executed successfully")
+    
+#@client.on(events.NewMessage(outgoing=True, pattern=r'.exec (.*)'))
+#async def run(event):
+# code = event.raw_text[5:]
+# resp = event.respond
+# creator='written by [Twit](tg://user?id=234480941) and copied by [blank](tg://user?id=214416808) (piece of shit)'
+# exec(
+#  f'async def __ex(event): ' +
+#  ''.join(f'\n {l}' for l in code.split('\n'))
+# )
+# result = await locals()['__ex'](event)
+# if result:
+#  await event.edit("**Query: **\n```"+event.text[5:]+'```\n**Result: **\n```'+str(result)+'```')
+# else:
+#  await event.edit("**Query: **\n```"+event.text[5:]+'```\n**Result: **\n```'+'No Result Returned/False'+'```')
+# await client.send_message(-1001162835202,"Exec query "+event.text[5:]+" was executed successfully") 
+
+@client.on(events.NewMessage(pattern='.ping'))
+async def ping(event):
     start = datetime.now()
     await event.edit('Pong!')
     end = datetime.now()
@@ -224,13 +238,15 @@ async def spammer(event):
     spam_message=str(event.text[8:])
     await asyncio.wait([event.respond(spam_message) for i in range(counter)])
     await event.delete()
+    
 @client.on(events.NewMessage(outgoing=True, pattern='.speed'))
 async def speedtest(event):
     l=await event.reply('```Running speed test . . .```')
     k=subprocess.run(['speedtest-cli'], stdout=subprocess.PIPE)
     await l.edit('```' + k.stdout.decode()[:-1] + '```')
     await event.delete()
-@client.on(events.NewMessage(outgoing=True, pattern='.trt'))
+    
+@client.on(events.NewMessage(pattern='.tl'))
 async def translateme(event):     
     translator=Translator()
     textx=await event.get_reply_message()
@@ -244,8 +260,9 @@ async def translateme(event):
     reply_text="```Source: ```\n"+text+"```Translation: ```\n"+reply_text
     await client.send_message(event.chat_id,reply_text)
     await event.delete()
-    await client.send_message(-1001200493978,"Translate query "+message+" was executed successfully")
-@client.on(events.NewMessage(outgoing=True, pattern='.str'))
+    await client.send_message(-1001162835202,"Translate query "+message+" was executed successfully")
+    
+@client.on(events.NewMessage(outgoing=True, pattern='.stretch'))
 async def stretch(event):
     textx=await event.get_reply_message()
     message = await client.get_messages(event.chat_id)
@@ -257,6 +274,7 @@ async def stretch(event):
     count = random.randint(3, 10)
     reply_text = re.sub(r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])', (r'\1' * count), message)
     await event.edit(reply_text)
+    
 @client.on(events.NewMessage(incoming=True))
 async def afk_on_pm(event):
     global ISAFK
@@ -318,7 +336,8 @@ async def afk_on_pm(event):
                    else:
                     USERS[event.chat_id]=USERS[event.chat_id]+1
                     COUNT_MSG=COUNT_MSG+1
-@client.on(events.NewMessage(outgoing=True, pattern='.cp'))   
+                    
+@client.on(events.NewMessage(pattern='.cp'))   
 async def copypasta(event):
     textx=await event.get_reply_message()
     if textx:
@@ -345,6 +364,7 @@ async def copypasta(event):
                 reply_text += c.lower()
     reply_text += random.choice(emojis)
     await event.edit(reply_text)
+    
 @client.on(events.NewMessage(outgoing=True, pattern='.notafk'))
 async def not_afk(event):
             global ISAFK
@@ -361,13 +381,14 @@ async def not_afk(event):
                     break
                 i=i+1
                 await message.delete()
-            await client.send_message(-1001200493978,"You had recieved "+str(COUNT_MSG)+" messages from "+str(len(USERS))+" chats while you were away") 
+            await client.send_message(-1001162835202,"You had recieved "+str(COUNT_MSG)+" messages from "+str(len(USERS))+" chats while you were away") 
             for i in USERS:
-                await client.send_message(-1001200493978,str(i)+" sent you "+"```"+str(USERS[i])+" messages```")
+                await client.send_message(-1001162835202,str(i)+" sent you "+"```"+str(USERS[i])+" messages```")
             COUNT_MSG=0
             USERS={}
             AFKREASON="No reason"
-@client.on(events.NewMessage(outgoing=True, pattern='.vapor'))  
+            
+@client.on(events.NewMessage(pattern='.vapor'))  
 async def vapor(event):
     textx=await event.get_reply_message()
     message = await client.get_messages(event.chat_id)
@@ -382,12 +403,14 @@ async def vapor(event):
         data = ''    
     reply_text = str(data).translate(WIDE_MAP)
     await event.edit(reply_text)
+    
 @client.on(events.NewMessage(outgoing=True, pattern=':/'))
 async def dopedance(event):
     uio=['/','\\']
     for i in range (1,15):
         time.sleep(0.3)
         await event.edit(':'+uio[i%2])
+        
 @client.on(events.NewMessage(outgoing=True, pattern='-_-'))
 async def mutemeow(event):
     await event.delete()
@@ -396,13 +419,15 @@ async def mutemeow(event):
     for j in range(10):
         t = t[:-1] + '_-'
         await r.edit(t)
-@client.on(events.NewMessage(outgoing=True, pattern='.react'))
+        
+@client.on(events.NewMessage(pattern='.react'))
 async def react(event):        
     reactor=['ʘ‿ʘ','ヾ(-_- )ゞ','(っ˘ڡ˘ς)','(´ж｀ς)','( ಠ ʖ̯ ಠ)','(° ͜ʖ͡°)╭∩╮','(ᵟຶ︵ ᵟຶ)','(งツ)ว','ʚ(•｀','(っ▀¯▀)つ','(◠﹏◠)','( ͡ಠ ʖ̯ ͡ಠ)','( ఠ ͟ʖ ఠ)','(∩｀-´)⊃━☆ﾟ.*･｡ﾟ','(⊃｡•́‿•̀｡)⊃','(._.)','{•̃_•̃}','(ᵔᴥᵔ)','♨_♨','⥀.⥀','ح˚௰˚づ ','(҂◡_◡)','ƪ(ړײ)‎ƪ​​','(っ•́｡•́)♪♬','◖ᵔᴥᵔ◗ ♪ ♫ ','(☞ﾟヮﾟ)☞','[¬º-°]¬','(Ծ‸ Ծ)','(•̀ᴗ•́)و ̑̑','ヾ(´〇`)ﾉ♪♪♪','(ง\'̀-\'́)ง','ლ(•́•́ლ)','ʕ •́؈•̀ ₎','♪♪ ヽ(ˇ∀ˇ )ゞ','щ（ﾟДﾟщ）','( ˇ෴ˇ )','눈_눈','(๑•́ ₃ •̀๑) ','( ˘ ³˘)♥ ','ԅ(≖‿≖ԅ)','♥‿♥','◔_◔','⁽⁽ଘ( ˊᵕˋ )ଓ⁾⁾','乁( ◔ ౪◔)「      ┑(￣Д ￣)┍','( ఠൠఠ )ﾉ','٩(๏_๏)۶','┌(ㆆ㉨ㆆ)ʃ','ఠ_ఠ','(づ｡◕‿‿◕｡)づ','(ノಠ ∩ಠ)ノ彡( \\o°o)\\','“ヽ(´▽｀)ノ”','༼ ༎ຶ ෴ ༎ຶ༽','｡ﾟ( ﾟஇ‸இﾟ)ﾟ｡','(づ￣ ³￣)づ','(⊙.☉)7','ᕕ( ᐛ )ᕗ','t(-_-t)','(ಥ⌣ಥ)','ヽ༼ ಠ益ಠ ༽ﾉ','༼∵༽ ༼⍨༽ ༼⍢༽ ༼⍤༽','ミ●﹏☉ミ','(⊙_◎)','¿ⓧ_ⓧﮌ','ಠ_ಠ','(´･_･`)','ᕦ(ò_óˇ)ᕤ','⊙﹏⊙','(╯°□°）╯︵ ┻━┻','¯\_(⊙︿⊙)_/¯','٩◔̯◔۶','°‿‿°','ᕙ(⇀‸↼‶)ᕗ','⊂(◉‿◉)つ','V•ᴥ•V','q(❂‿❂)p','ಥ_ಥ','ฅ^•ﻌ•^ฅ','ಥ﹏ಥ','（ ^_^）o自自o（^_^ ）','ಠ‿ಠ','ヽ(´▽`)/','ᵒᴥᵒ#','( ͡° ͜ʖ ͡°)','┬─┬﻿ ノ( ゜-゜ノ)','ヽ(´ー｀)ノ','☜(⌒▽⌒)☞','ε=ε=ε=┌(;*´Д`)ﾉ','(╬ ಠ益ಠ)','┬─┬⃰͡ (ᵔᵕᵔ͜ )','┻━┻ ︵ヽ(`Д´)ﾉ︵﻿ ┻━┻','¯\_(ツ)_/¯','ʕᵔᴥᵔʔ','(`･ω･´)','ʕ•ᴥ•ʔ','ლ(｀ー´ლ)','ʕʘ̅͜ʘ̅ʔ','（　ﾟДﾟ）','¯\(°_o)/¯','(｡◕‿◕｡)']
     index=randint(0,len(reactor))
     reply_text=reactor[index]
     await event.edit(reply_text)
-@client.on(events.NewMessage(outgoing=True, pattern='.fastpurge'))  
+    
+@client.on(events.NewMessage(outgoing=True, pattern='.purge'))  
 async def fastpurge(event):
    chat = await event.get_input_chat()
    msgs = []
@@ -417,7 +442,7 @@ async def fastpurge(event):
    if msgs:
     await client.delete_messages(chat, msgs)
    await client.send_message(event.chat_id,"```Fast Purge Complete!\n```Purged "+str(count)+" messages. **This auto-generated message shall be self destructed in 2 seconds.**")
-   await client.send_message(-1001200493978,"Purge of "+str(count)+" messages done successfully.")
+   await client.send_message(-1001162835202,"Purge of "+str(count)+" messages done successfully.")
    time.sleep(2)
    i=1
    async for message in client.iter_messages(event.chat_id,from_user='me'):
@@ -425,6 +450,7 @@ async def fastpurge(event):
             break
         i=i+1
         await message.delete()
+        
 @client.on(events.NewMessage(outgoing=True, pattern='.sd'))
 async def selfdestruct(event):
     message=await client.get_messages(event.chat_id)
@@ -440,17 +466,19 @@ async def selfdestruct(event):
             break
         i=i+1
         await message.delete()
-        await client.send_message(-1001200493978,"sd query done successfully")
-@client.on(events.NewMessage(outgoing=True, pattern='^.ud (.*)'))
+        await client.send_message(-1001162835202,"sd query done successfully")
+        
+@client.on(events.NewMessage(pattern='^.ud (.*)'))
 async def ud(event):
   await event.edit("Processing...")
   str = event.pattern_match.group(1)
   mean = urbandict.define(str)
   if len(mean) >= 0:
     await event.edit('Text: **'+str+'**\n\nMeaning: **'+mean[0]['def']+'**\n\n'+'Example: \n__'+mean[0]['example']+'__')
-    await client.send_message(-1001200493978,"ud query "+str+"executed successfully.")
+    await client.send_message(-1001162835202,"ud query "+str+"executed successfully.")
   else:
     await event.edit("No result found for **"+str+"**")
+    
 @client.on(events.NewMessage(outgoing=True, pattern='.tts'))  
 async def tts(event):
     textx=await event.get_reply_message()
