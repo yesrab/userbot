@@ -244,7 +244,6 @@ async def speedtest(event):
     l=await event.reply('```Running speed test . . .```')
     k=subprocess.run(['speedtest-cli'], stdout=subprocess.PIPE)
     await l.edit('```' + k.stdout.decode()[:-1] + '```')
-    await event.delete()
     
 @client.on(events.NewMessage(pattern='.tl'))
 async def translateme(event):     
@@ -259,7 +258,6 @@ async def translateme(event):
     reply_text=translator.translate(text, dest='en').text
     reply_text="```Source: ```\n"+text+"```Translation: ```\n"+reply_text
     await client.send_message(event.chat_id,reply_text)
-    await event.delete()
     await client.send_message(-1001162835202,"Translate query "+message+" was executed successfully")
     
 @client.on(events.NewMessage(outgoing=True, pattern='.stretch'))
