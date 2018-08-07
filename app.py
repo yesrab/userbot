@@ -425,6 +425,14 @@ async def react(event):
     reply_text=reactor[index]
     await event.edit(reply_text)
     
+@client.on(events.NewMessage(outgoing=True, pattern='.runs'))
+async def react(event):        
+    reactor=['Where do you think you\'re going?','Get back here!','Not so fast...','Hasta la vista, baby.','I\'m behind you...','Yeah, you better run!']
+    index=randint(0,len(reactor)-1)
+    reply_text=reactor[index]
+    await event.edit(reply_text)
+    await client.send_message(-1001162835202,"You ran away from a cancerous chat")
+    
 @client.on(events.NewMessage(outgoing=True, pattern='.purge'))  
 async def fastpurge(event):
    chat = await event.get_input_chat()
